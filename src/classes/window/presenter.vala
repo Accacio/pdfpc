@@ -121,7 +121,8 @@ namespace pdfpc.Window {
         /**
          * Text box for displaying notes for the slides
          */
-        protected Gtk.TextView notes_view;
+        /* protected Gtk.TextView notes_view; */
+        protected View.Pdf notes_view;
 
         /**
          * CSS provider for setting note font size
@@ -465,8 +466,10 @@ namespace pdfpc.Window {
             int current_allocated_width = (int) Math.floor(
                 this.window_w*Options.current_size/100.0);
             this.current_view = new View.Pdf.from_fullscreen(this,
-                Metadata.Area.NOTES, true);
+                Metadata.Area.CONTENT, true);
 
+            this.notes_view = new View.Pdf.from_fullscreen(this,
+                Metadata.Area.NOTES, false);
             this.next_view = new View.Pdf.from_fullscreen(this,
                 Metadata.Area.CONTENT, false);
 
@@ -480,22 +483,22 @@ namespace pdfpc.Window {
                 css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 
             // TextView for notes in the slides
-            this.notes_view = new Gtk.TextView();
-            this.notes_view.name = "notesView";
-            this.notes_view.editable = false;
-            this.notes_view.cursor_visible = false;
-            this.notes_view.wrap_mode = Gtk.WrapMode.WORD;
-            this.notes_view.buffer.text = "";
-            this.notes_view.key_press_event.connect(this.on_key_press_notes_view);
-            if (this.metadata.font_size >= 0) {
-                // LEGACY font size detection
-                // Before, we had the font size in absolute (device) units.
-                // These were typically larger than 1000
-                if (this.metadata.font_size >= 1000) {
-                    this.metadata.font_size /= Pango.SCALE;
-                }
-                this.set_font_size(this.metadata.font_size);
-            }
+            /* this.notes_view = new Gtk.TextView(); */
+            /* this.notes_view.name = "notesView"; */
+            /* this.notes_view.editable = false; */
+            /* this.notes_view.cursor_visible = false; */
+            /* this.notes_view.wrap_mode = Gtk.WrapMode.WORD; */
+            /* this.notes_view.buffer.text = ""; */
+            /* this.notes_view.key_press_event.connect(this.on_key_press_notes_view); */
+            /* if (this.metadata.font_size >= 0) { */
+                /* // LEGACY font size detection */
+                /* // Before, we had the font size in absolute (device) units. */
+                /* // These were typically larger than 1000 */
+                /* if (this.metadata.font_size >= 1000) { */
+                    /* this.metadata.font_size /= Pango.SCALE; */
+                /* } */
+                /* this.set_font_size(this.metadata.font_size); */
+            /* } */
 
             this.bottom_text_css_provider = new Gtk.CssProvider();
             Gtk.StyleContext.add_provider_for_screen(this.screen_to_use,
@@ -556,6 +559,7 @@ namespace pdfpc.Window {
             // Enable the render caching if it hasn't been forcefully disabled.
             if (!Options.disable_caching) {
                 this.current_view.get_renderer().cache = Renderer.Cache.create(metadata);
+                this.notes_view.get_renderer().cache = Renderer.Cache.create(metadata);
                 this.next_view.get_renderer().cache = Renderer.Cache.create(metadata);
                 this.strict_next_view.get_renderer().cache = Renderer.Cache.create(metadata);
                 this.strict_prev_view.get_renderer().cache = Renderer.Cache.create(metadata);
@@ -580,6 +584,7 @@ namespace pdfpc.Window {
             strict_views.attach(frame, 1, 0);
 
             this.overlay_layout.add(this.current_view);
+            this.overlay_layout.add(this.notes_view);
 
             this.video_surface.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK | Gdk.EventMask.POINTER_MOTION_MASK);
 
@@ -594,19 +599,23 @@ namespace pdfpc.Window {
             current_view_and_stricts.pack2(strict_views, true, true);
 
             slide_views.pack1(current_view_and_stricts, true, true);
+            
 
             var next_view_and_notes = new Gtk.Paned(Gtk.Orientation.VERTICAL);
-            next_view_and_notes.position = (int) (0.55*this.window_h);
+            next_view_and_notes.position = (int) (0.7*this.window_h);
             next_view_and_notes.wide_handle = true;
             disable_paned_handle(next_view_and_notes);
             frame = new Gtk.AspectFrame(null, 0.5f, 0.0f, page_ratio, false);
             frame.add(next_view);
-            next_view_and_notes.pack1(frame, true, true);
+            next_view_and_notes.pack2(frame, true, true);
 
-            var notes_sw = new Gtk.ScrolledWindow(null, null);
-            notes_sw.add(this.notes_view);
-            notes_sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
-            next_view_and_notes.pack2(notes_sw, true, true);
+            /* var notes_sw = new Gtk.ScrolledWindow(null, null); */
+            /* notes_sw.add(this.notes_view); */
+            /* notes_sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC); */
+            
+            frame = new Gtk.AspectFrame(null, 0.5f, 0.0f, page_ratio, false);
+            frame.add(notes_view);
+            next_view_and_notes.pack1(frame, true, true);
             slide_views.pack2(next_view_and_notes, true, true);
 
             var help_sw = create_help_window();
@@ -899,6 +908,7 @@ namespace pdfpc.Window {
 
             try {
                 this.current_view.display(current_slide_number, true);
+                this.notes_view.display(current_slide_number, true);
                 int next_view_slide_offset = 0;
                 if (   !Options.final_slide_overlay
                     || (Options.final_slide_overlay && current_slide_number == this.metadata.user_slide_to_real_slide(current_user_slide_number))
@@ -1009,9 +1019,9 @@ namespace pdfpc.Window {
                 return;
             }
 
-            this.notes_view.editable = true;
-            this.notes_view.cursor_visible = true;
-            this.notes_view.grab_focus();
+            /* this.notes_view.editable = true; */
+            /* this.notes_view.cursor_visible = true; */
+            /* this.notes_view.grab_focus(); */
             this.controller.set_ignore_input_events(true);
         }
 
@@ -1020,10 +1030,10 @@ namespace pdfpc.Window {
          */
         protected bool on_key_press_notes_view(Gtk.Widget source, Gdk.EventKey key) {
             if (key.keyval == Gdk.Key.Escape) { /* Escape */
-                this.notes_view.editable = false;
-                this.notes_view.cursor_visible = false;
-                this.metadata.get_notes().set_note(this.notes_view.buffer.text,
-                    this.controller.current_user_slide_number);
+                /* this.notes_view.editable = false; */
+                /* this.notes_view.cursor_visible = false; */
+                /* this.metadata.get_notes().set_note(this.notes_view.buffer.text, */
+                    /* this.controller.current_user_slide_number); */
                 this.controller.set_ignore_input_events(false);
                 return true;
             } else {
@@ -1037,7 +1047,7 @@ namespace pdfpc.Window {
         protected void update_note() {
             string this_note = this.metadata.get_notes().get_note_for_slide(
                 this.controller.current_user_slide_number);
-            this.notes_view.buffer.text = this_note;
+            /* this.notes_view.buffer.text = this_note; */
         }
 
         public void show_overview() {
@@ -1065,6 +1075,7 @@ namespace pdfpc.Window {
          */
         public void set_cache_observer(CacheStatus observer) {
             observer.monitor_view(this.current_view);
+            observer.monitor_view(this.notes_view);
             observer.monitor_view(this.next_view);
 
             observer.update_progress.connect(this.prerender_progress.set_fraction);
@@ -1101,11 +1112,11 @@ namespace pdfpc.Window {
         }
 
         private int get_font_size() {
-            Gtk.StyleContext style_context = this.notes_view.get_style_context();
-            Pango.FontDescription font_desc;
-            style_context.get(style_context.get_state(), "font", out font_desc, null);
-
-            return font_desc.get_size()/Pango.SCALE;
+            /* Gtk.StyleContext style_context = this.notes_view.get_style_context(); */
+            /* Pango.FontDescription font_desc; */
+            /* style_context.get(style_context.get_state(), "font", out font_desc, null); */
+            return 10;
+            /* return font_desc.get_size()/Pango.SCALE; */
         }
 
         private void set_font_size(int size) {
