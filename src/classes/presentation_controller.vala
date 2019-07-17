@@ -213,6 +213,9 @@ namespace pdfpc {
                         (int) this.metadata.get_duration() * 60);
                     this.timer.reset();
 
+                    this.timerPerSlide = new CountupTimer(this, 0);
+                    this.timerPerSlide.reset();
+
                     this.current_slide_number = 0;
                     this.current_user_slide_number = 0;
 
@@ -249,6 +252,7 @@ namespace pdfpc {
          * We hope the controllables behave accordingly.
          */
         protected TimerLabel timer;
+        protected TimerLabel timerPerSlide;
 
         protected delegate void callback();
         protected delegate void callback_with_parameter(GLib.Variant? parameter);
@@ -360,6 +364,9 @@ namespace pdfpc {
 
             this.timer = getTimerLabel(this, 0);
             this.timer.reset();
+
+            this.timerPerSlide = new CountupTimer(this, 0);
+            this.timerPerSlide.reset();
 
             this.add_actions();
 
@@ -1225,6 +1232,8 @@ namespace pdfpc {
 
             if (start_timer) {
                 this.timer.start();
+                this.timerPerSlide.reset();
+                this.timerPerSlide.start();
             }
         }
 
@@ -1243,6 +1252,9 @@ namespace pdfpc {
             return this.timer;
         }
 
+        public TimerLabel getTimerPerSlide() {
+            return this.timerPerSlide;
+        }
         private void readKeyBindings() {
             foreach (var bt in Options.key_bindings) {
                 if (bt.type == "bind") {
@@ -1301,15 +1313,18 @@ namespace pdfpc {
             }
             if (overview_shown)
                 return;
-
+             
             this.timer.start();
+            this.timerPerSlide.reset(); 
+            this.timerPerSlide.start(); 
+
             // there is a next slide
             if (this.current_slide_number < this.n_slides - 1) {
                 ++this.current_slide_number;
                 this.current_user_slide_number = this.metadata.real_slide_to_user_slide(this.current_slide_number);
 
                 if (!this.frozen) {
-                    this.faded_to_black = false;
+                this.faded_to_black = false;
                 }
 
                 this.controllables_update();
@@ -1326,6 +1341,7 @@ namespace pdfpc {
          */
         public void next_user_page() {
             this.timer.start();
+
             bool needs_update = false; // Did we change anything? Default: no
 
             // there is a next user slide
@@ -1365,6 +1381,8 @@ namespace pdfpc {
          */
         public void next_unseen() {
             this.timer.start();
+            // this.timerPerSlide.reset();
+            // this.timerPerSlide.start();
 
             if (!this.frozen) {
                 this.faded_to_black = false;
@@ -1418,6 +1436,8 @@ namespace pdfpc {
          */
         public void jump_to_first_overlay() {
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
 
             int destination = this.metadata.user_slide_to_real_slide(this.current_user_slide_number, false);
             if (this.current_slide_number != destination) {
@@ -1444,6 +1464,8 @@ namespace pdfpc {
                 --this.current_slide_number;
                 this.current_user_slide_number = this.metadata.real_slide_to_user_slide(this.current_slide_number);
 
+                this.timerPerSlide.reset();
+                this.timerPerSlide.start();
                 if (!this.frozen) {
                     this.faded_to_black = false;
                 }
@@ -1509,6 +1531,8 @@ namespace pdfpc {
          */
         private void _goto_first(bool skipHistory) {
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
 
             // update history if we are not already at the first slide
             if (this.current_slide_number > 0 && !skipHistory) {
@@ -1535,6 +1559,8 @@ namespace pdfpc {
 
             // Start the timer
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
 
             this.current_user_slide_number = this.metadata.get_last_saved_slide() - 1;
             this.current_slide_number = this.metadata.user_slide_to_real_slide(this.current_user_slide_number);
@@ -1552,6 +1578,8 @@ namespace pdfpc {
          */
         public void goto_last() {
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
 
             // if are not already at the last slide, update history
             if (this.current_user_slide_number < this.metadata.get_end_user_slide()) {
@@ -1572,6 +1600,8 @@ namespace pdfpc {
          */
         public void goto_string(Variant? page) {
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
 
             int destination = int.parse(page.get_string()) - 1;
             this.goto_user_page(destination);
@@ -1591,6 +1621,8 @@ namespace pdfpc {
             }
 
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
 
             this.current_user_slide_number = int.min(this.current_user_slide_number + 10, this.metadata.get_user_slide_count() - 1);
             this.current_slide_number = this.metadata.user_slide_to_real_slide(this.current_user_slide_number);
@@ -1610,6 +1642,8 @@ namespace pdfpc {
             }
 
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
 
             this.current_user_slide_number = int.max(this.current_user_slide_number - 10, 0);
             this.current_slide_number = this.metadata.user_slide_to_real_slide(this.current_user_slide_number);
@@ -1625,6 +1659,8 @@ namespace pdfpc {
          */
         public void goto_user_page(int page_number, bool useLast = true) {
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
 
             if (this.current_user_slide_number != page_number) {
                 this.push_history();
@@ -1750,7 +1786,7 @@ namespace pdfpc {
             if (this.overview_shown) {
                 return;
             }
-            this.edit_note_request(); // emit signal
+            // this.edit_note_request(); // emit signal
         }
 
         /**
@@ -1802,6 +1838,8 @@ namespace pdfpc {
          */
         protected void start() {
             this.timer.start();
+            this.timerPerSlide.reset();
+            this.timerPerSlide.start();
             this.controllables_update();
         }
 
@@ -1810,6 +1848,7 @@ namespace pdfpc {
          */
         public void toggle_pause() {
             this.timer.pause();
+            this.timerPerSlide.pause();
             this.controllables_update();
         }
 
@@ -1818,6 +1857,7 @@ namespace pdfpc {
          */
         protected void reset_timer() {
             this.timer.reset();
+            this.timerPerSlide.reset();
         }
 
         /**

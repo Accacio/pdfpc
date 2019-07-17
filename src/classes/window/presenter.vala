@@ -67,6 +67,11 @@ namespace pdfpc.Window {
         protected TimerLabel? timer;
 
         /**
+         * Timer for the presenation
+         */
+        protected TimerLabel? timerPerSlide;
+
+        /**
          * Slide progress label ( eg. "23/42" )
          */
         protected Gtk.Entry slide_progress;
@@ -507,10 +512,15 @@ namespace pdfpc.Window {
 
             // The countdown timer is centered in the 90% bottom part of the screen
             this.timer = this.controller.getTimer();
+            this.timerPerSlide = this.controller.getTimerPerSlide();
+
             this.timer.name = "timer";
             this.timer.get_style_context().add_class("bottomText");
             this.timer.set_justify(Gtk.Justification.CENTER);
 
+            this.timerPerSlide.name = "timerPerSlide";
+            this.timerPerSlide.get_style_context().add_class("bottomText");
+            this.timerPerSlide.set_justify(Gtk.Justification.CENTER);
 
             // The slide counter is centered in the 90% bottom part of the screen
             this.slide_progress = new Gtk.Entry();
@@ -632,12 +642,16 @@ namespace pdfpc.Window {
             this.timer.halign = Gtk.Align.CENTER;
             this.timer.valign = Gtk.Align.END;
 
+            this.timerPerSlide.halign = Gtk.Align.CENTER;
+            this.timerPerSlide.valign = Gtk.Align.END;
+
             var progress_alignment = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
             progress_alignment.pack_start(this.prerender_progress);
             progress_alignment.pack_end(this.slide_progress, false);
 
             bottom_row.pack_start(this.status);
             bottom_row.pack_start(this.timer);
+            bottom_row.pack_start(this.timerPerSlide);
             bottom_row.pack_end(progress_alignment);
 
             Gtk.Grid full_layout = new Gtk.Grid();
