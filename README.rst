@@ -93,7 +93,7 @@ Requirements
 In order to compile and run pdfpc, the following requirements need to be met:
 
 - cmake >= 3.0
-- vala  >= 0.34
+- vala  >= 0.48
 - gtk+  >= 3.22
 - gee   >= 0.8
 - poppler with glib bindings
