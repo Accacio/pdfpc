@@ -165,7 +165,7 @@ namespace pdfpc {
         /**
          * Width of the current slide in the presenter (% of the window width)
          */
-        public static uint current_size = 60;
+        public static uint current_size = 40;
 
         /**
          * Height of the current slide in the presenter (% of the "main")
@@ -175,7 +175,7 @@ namespace pdfpc {
         /**
          * Height of the next slide in the presenter (% of the "main")
          **/
-        public static uint next_height = 70;
+        public static uint next_height = 80;
 
         /**
          * Maximize the main view of the presenter in the drawing modes

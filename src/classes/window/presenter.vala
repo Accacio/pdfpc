@@ -631,9 +631,9 @@ namespace pdfpc.Window {
 
             frame = new Gtk.AspectFrame(null, 0.5f, 0.0f, page_ratio, false);
             frame.add(next_view);
-            this.next_view_and_notes.pack1(frame, true, true);
+            this.next_view_and_notes.pack1(this.notes_stack, true, true);
 
-            this.next_view_and_notes.pack2(this.notes_stack, true, true);
+            this.next_view_and_notes.pack2(frame, true, true);
             this.slide_views.pack2(this.next_view_and_notes, true, true);
 
             var help_sw = create_help_window();
